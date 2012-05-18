@@ -54,7 +54,7 @@ class Grid {
      * @var string
      */
     private $hash;
-
+    
     public function __construct($container, $paginator) {
         $this->container = $container;
         
@@ -91,7 +91,7 @@ class Grid {
     }
     
     public function addColumn($name, $colmodel) {
-        $col = new Column ();
+        $col = new Column ( $this->router );
         $col->setName ( $name );
         $col->setColModel ( $colmodel );
         $this->columns [] = $col;
@@ -204,46 +204,47 @@ class Grid {
                         $op = $rule ['op'];
                         
                         $parameter = $rule ['data'];
+                        $fieldName = preg_replace ( '/[^A-Za-z0-9_-]+/', '_', $c->getFieldName () );
                         
                         switch ($rule ['op']) {
                             case 'eq' :
-                                $where = $this->qb->expr ()->eq ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->eq ( $c->getFieldIndex (), ":$fieldName" );
                                 break;
                             case 'ne' :
-                                $where = $this->qb->expr ()->neq ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->neq ( $c->getFieldIndex (), ":$fieldName" );
                                 break;
                             case 'lt' :
-                                $where = $this->qb->expr ()->lt ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->lt ( $c->getFieldIndex (), ":$fieldName" );
                                 break;
                             case 'le' :
-                                $where = $this->qb->expr ()->lte ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->lte ( $c->getFieldIndex (), ":$fieldName" );
                                 break;
                             case 'gt' :
-                                $where = $this->qb->expr ()->gt ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->gt ( $c->getFieldIndex (), ":$fieldName" );
                                 break;
                             case 'ge' :
-                                $where = $this->qb->expr ()->gte ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->gte ( $c->getFieldIndex (), ":$fieldName" );
                                 break;
                             case 'bw' :
-                                $where = $this->qb->expr ()->like ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->like ( $c->getFieldIndex (), ":$fieldName" );
                                 $parameter = $rule ['data'] . '%';
                                 break;
                             case 'bn' :
-                                $where = $c->getFieldIndex () . " NOT LIKE :{$c->getFieldName ()}";
+                                $where = $c->getFieldIndex () . " NOT LIKE :$fieldName";
                                 $parameter = $rule ['data'] . '%';
                                 break;
                             case 'nu' :
-                                $where = $this->qb->expr ()->orX ( $this->qb->expr ()->eq ( $c->getFieldIndex (), ":{$c->getFieldName ()}" ), $c->getFieldIndex () . ' IS NULL' );
+                                $where = $this->qb->expr ()->orX ( $this->qb->expr ()->eq ( $c->getFieldIndex (), ":$fieldName" ), $c->getFieldIndex () . ' IS NULL' );
                                 $parameter = '';
                                 break;
                             case 'nn' :
-                                $where = $this->qb->expr ()->andX ( $this->qb->expr ()->neq ( $c->getFieldIndex (), ":{$c->getFieldName ()}" ), $c->getFieldIndex () . ' IS NOT NULL' );
+                                $where = $this->qb->expr ()->andX ( $this->qb->expr ()->neq ( $c->getFieldIndex (), ":$fieldName" ), $c->getFieldIndex () . ' IS NOT NULL' );
                                 
                                 $parameter = '';
                                 break;
                             case 'in' :
                                 if (false !== strpos ( $rule ['data'], ',' )) {
-                                    $where = $this->qb->expr ()->in ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                    $where = $this->qb->expr ()->in ( $c->getFieldIndex (), ":$fieldName" );
                                     $parameter = explode ( ',', $rule ['data'] );
                                 }
                                 elseif (false !== strpos ( $rule ['data'], '-' )) {
@@ -256,7 +257,7 @@ class Grid {
                                 break;
                             case 'ni' :
                                 if (false !== strpos ( $rule ['data'], ',' )) {
-                                    $where = $this->qb->expr ()->notIn ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                    $where = $this->qb->expr ()->notIn ( $c->getFieldIndex (), ":$fieldName" );
                                     $parameter = explode ( ',', $rule ['data'] );
                                 }
                                 elseif (false !== strpos ( $rule ['data'], '-' )) {
@@ -269,19 +270,19 @@ class Grid {
                                 
                                 break;
                             case 'ew' :
-                                $where = $this->qb->expr ()->like ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->like ( $c->getFieldIndex (), ":$fieldName" );
                                 $parameter = '%' . $rule ['data'];
                                 break;
                             case 'en' :
-                                $where = $c->getFieldIndex () . " NOT LIKE :{$c->getFieldName ()}";
+                                $where = $c->getFieldIndex () . " NOT LIKE :$fieldName";
                                 $parameter = '%' . $rule ['data'];
                                 break;
                             case 'nc' :
-                                $where = $c->getFieldIndex () . " NOT LIKE :{$c->getFieldName ()}";
+                                $where = $c->getFieldIndex () . " NOT LIKE :$fieldName";
                                 $parameter = '%' . $rule ['data'] . '%';
                                 break;
                             default : //case 'cn'
-                                $where = $this->qb->expr ()->like ( $c->getFieldIndex (), ":{$c->getFieldName ()}" );
+                                $where = $this->qb->expr ()->like ( $c->getFieldIndex (), ":$fieldName" );
                                 $parameter = '%' . $rule ['data'] . '%';
                         }
                         //TODO : handle date field
@@ -296,7 +297,7 @@ class Grid {
                         }
                         
                         if (isset ( $parameter )) {
-                            $this->qb->setParameter ( $c->getFieldName (), $parameter );
+                            $this->qb->setParameter ( $fieldName, $parameter );
                         }
                     }
                 }
@@ -320,7 +321,7 @@ class Grid {
             if ($search) {
                 $this->generateFilters ();
             }
-            
+            // \Doctrine\Common\Util\Debug::dump( $this->qb->getQuery ()/*->getResult()*/ );die;
             $pagination = $this->paginator->paginate ( $this->qb->getQuery ()/*->setHydrationMode ( Query::HYDRATE_ARRAY )*/, $page/* page number */, $limit/* limit per page */);
             
             $nbRec = $pagination->getTotalItemCount ();
@@ -379,7 +380,7 @@ die;
             return $response;
         }
         else {
-            throw \Exception ( 'Invalid query' );
+            throw\Exception ( 'Invalid query' );
         }
     }
     
@@ -411,8 +412,6 @@ die;
             return $this->{$attribute};
         }
     }
-    
-
     
     public function getCulture() {
         if ($l = $this->request->get ( '_locale' ) != '') {
