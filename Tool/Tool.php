@@ -2,16 +2,16 @@
 
 namespace Openify\Bundle\JqGridBundle\Tool;
 
-class Tool {
-    
-    static public function json_encode_jsfunc($input = array(), $funcs = array(), $level = 0) {
+class Tool
+{
+    public static function json_encode_jsfunc($input = array(), $funcs = array(), $level = 0)
+    {
         foreach ( $input as $key => $value ) {
             if (is_array ( $value )) {
                 $ret = self::json_encode_jsfunc ( $value, $funcs, 1 );
                 $input [$key] = $ret [0];
                 $funcs = $ret [1];
-            }
-            else {
+            } else {
                 if (strpos ( $value, 'function(' ) === 0 || strpos ( $value, 'var_' ) === 0) {
                     $func_key = "#" . uniqid () . "#";
                     $value = ltrim ( $value, 'var_' );
@@ -22,12 +22,12 @@ class Tool {
         }
         if ($level == 1) {
             return array ($input, $funcs );
-        }
-        else {
+        } else {
             $input_json = json_encode ( $input );
             foreach ( $funcs as $key => $value ) {
                 $input_json = str_replace ( '"' . $key . '"', $value, $input_json );
             }
+
             return $input_json;
         }
     }
