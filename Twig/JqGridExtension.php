@@ -113,7 +113,7 @@ class JqGridExtension extends \Twig_Extension {
 
     public function getName()
     {
-        return 'eps_jq_grid_twig_extension';
+        return 'openify_jq_grid_twig_extension';
     }
 
 }
